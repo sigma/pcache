@@ -66,9 +66,11 @@
 
 (defconst pcache-default-save-delay 300)
 
+(defconst pcache-version-constant "0.3")
+
 (defclass pcache-repository (eieio-persistent)
   ((version :initarg :version :initform nil)
-   (version-constant :allocation :class :initform "0.2")
+   (version-constant :allocation :class :initform (eval pcache-version-constant))
    (entries :initarg :entries :initform (make-hash-table))
    (entry-cls :initarg :entry-cls :initform pcache-entry)
    (timestamp :initarg :timestamp :initform (float-time (current-time)))
