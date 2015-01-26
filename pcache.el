@@ -70,13 +70,14 @@
 
 (defclass pcache-repository (eieio-persistent eieio-named)
   ((version :initarg :version :initform nil)
-   (version-constant :allocation :class :initform (eval pcache-version-constant))
+   (version-constant :allocation :class)
    (entries :initarg :entries :initform (make-hash-table))
    (entry-cls :initarg :entry-cls :initform pcache-entry)
    (timestamp :initarg :timestamp :initform (float-time (current-time)))
    (save-delay :initarg :save-delay)))
 
 (oset-default 'pcache-repository :save-delay pcache-default-save-delay)
+(oset-default 'pcache-repository version-constant pcache-version-constant)
 
 (defvar *pcache-repository-name* nil)
 
