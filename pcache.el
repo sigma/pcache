@@ -184,8 +184,11 @@
 (defun pcache-kill-emacs-hook ()
   (maphash #'(lambda (k v)
                (condition-case nil
-                   (pcache-save v t)
-                 (error nil)))
+                   (pcache-purge-invalid v)
+                 (error nil))
+	       (condition-case nil
+		   (pcache-save v t)
+		 (error nil)))
            *pcache-repositories*))
 
 (defun pcache-destroy-repository (name)
