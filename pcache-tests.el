@@ -26,6 +26,7 @@
 ;;; Code:
 
 (require 'ert)
+(require 'pcache)
 
 (defmacro pcache-with-repository (var arglist &rest body)
   (declare (indent 2) (debug t))
