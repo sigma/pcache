@@ -1,4 +1,4 @@
-;;; pcache.el --- persistent caching for Emacs
+;;; pcache.el --- persistent caching for Emacs.
 
 ;; Copyright (C) 2011  Yann Hodique
 
