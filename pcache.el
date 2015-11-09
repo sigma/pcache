@@ -208,5 +208,18 @@
 
 (add-hook 'kill-emacs-hook 'pcache-kill-emacs-hook)
 
+;; in case we reload in place, clean all repositories with invalid version
+(let (to-clean)
+  (maphash #'(lambda (k v)
+               (condition-case nil
+                   (unless (eql (oref v :version)
+                                pcache-version-constant)
+                     (signal 'error nil))
+                 (error
+                  (setq to-clean (cons k to-clean)))))
+           *pcache-repositories*)
+  (dolist (k to-clean)
+    (remhash k *pcache-repositories*)))
+
 (provide 'pcache)
 ;;; pcache.el ends here
