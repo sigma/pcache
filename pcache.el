@@ -114,7 +114,8 @@
   ((timestamp :initarg :timestamp
               :initform (float-time (current-time)))
    (ttl :initarg :ttl :initform nil)
-   (value :initarg :value :initform nil)))
+   (value :initarg :value :initform nil)
+   (value-cls :initarg :value-cls :initform nil)))
 
 (defmethod pcache-entry-valid-p ((entry pcache-entry))
   (let ((ttl (oref entry :ttl)))
@@ -145,7 +146,10 @@
         (entry (or (and (eieio-object-p value)
                         (object-of-class-p value 'pcache-entry)
                         value)
-                   (make-instance (oref cache :entry-cls) :value value))))
+                   (make-instance
+                    (oref cache :entry-cls)
+                    :value value
+                    :value-cls (and (object-p value) (object-class value))))))
     (when ttl
       (oset entry :ttl ttl))
     (prog1
