@@ -96,8 +96,7 @@
                  (let* ((pcache-avoid-recursion t)
 			(*pcache-repository-name* newname)
                         (obj (eieio-persistent-read path 'pcache-repository t)))
-                   (and (or (equal (oref obj :version)
-                                   (oref-default (object-class obj) version-constant))
+                   (and (or (pcache-validate-repo obj)
                             (error "wrong version"))
                         (puthash newname obj *pcache-repositories*)
                         obj))
@@ -110,6 +109,19 @@
           (oset obj :version (oref-default obj version-constant))
           (puthash newname obj *pcache-repositories*)
           obj))))
+
+(defun pcache-validate-repo (cache)
+  (and
+   (equal (oref cache :version)
+          (oref-default (object-class cache) version-constant))
+   (hash-table-p (oref cache :entries))
+   (every
+    (lambda (entry)
+      (and (object-of-class-p entry (oref cache :entry-cls))
+           (or (null (oref entry :value-cls))
+               (object-of-class-p
+                (oref entry :value) (oref entry :value-cls)))))
+    (hash-table-values (oref cache :entries)))))
 
 (defclass pcache-entry ()
   ((timestamp :initarg :timestamp
