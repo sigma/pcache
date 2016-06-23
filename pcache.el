@@ -66,7 +66,7 @@
 
 (defconst pcache-default-save-delay 300)
 
-(defconst pcache-version-constant "0.3")
+(defconst pcache-version-constant "0.4")
 
 (defclass pcache-repository (eieio-persistent eieio-named)
   ((version :initarg :version :initform nil)
