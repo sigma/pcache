@@ -107,6 +107,7 @@
           (unless (file-exists-p dir)
             (make-directory dir t))
           (oset obj :file path)
+          (oset obj :version (oref-default obj version-constant))
           (puthash newname obj *pcache-repositories*)
           obj))))
 
