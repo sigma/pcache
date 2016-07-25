@@ -66,7 +66,10 @@
 
 (defconst pcache-default-save-delay 300)
 
-(defconst pcache-version-constant "0.4")
+(defconst pcache-internal-version-constant "0.4")
+
+(defconst pcache-version-constant
+  (format "%s/%s" emacs-version pcache-internal-version-constant))
 
 (defclass pcache-repository (eieio-persistent eieio-named)
   ((version :initarg :version :initform nil)
