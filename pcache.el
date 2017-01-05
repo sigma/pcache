@@ -56,6 +56,7 @@
 
 (require 'eieio)
 (require 'eieio-base)
+(require 'subr-x)
 
 (defvar pcache-directory
   (let ((dir (concat user-emacs-directory "var/pcache/")))
