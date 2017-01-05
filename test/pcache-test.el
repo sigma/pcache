@@ -63,5 +63,18 @@
     (pcache-invalidate repo 'foo)
     (should (null (pcache-get repo 'foo)))))
 
+(ert-deftest pcache-put-reload-get ()
+  (pcache-with-repository repo ("pcache-test/tmp1")
+    (pcache-put repo 'foo 44)
+    (pcache-save repo t)
+    (with-current-buffer
+        (find-file-noselect (concat pcache-directory "pcache-test/tmp1"))
+      (goto-char (point-min))
+      (while (search-forward "tmp1" nil t)
+        (replace-match "tmp2"))
+      (write-file (concat pcache-directory "pcache-test/tmp2"))))
+  (pcache-with-repository repo ("pcache-test/tmp2")
+    (should (eq 44 (pcache-get repo 'foo)))))
+
 (provide 'pcache-test)
 ;;; pcache-test.el ends here
