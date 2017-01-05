@@ -51,9 +51,7 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl))
-
+(require 'cl)
 (require 'eieio)
 (require 'eieio-base)
 
@@ -113,6 +111,11 @@
           (puthash newname obj *pcache-repositories*)
           obj))))
 
+(defun pcache-hash-table-values (h)
+  (let (values)
+    (maphash (lambda (k v) (push v values)) h)
+    values))
+
 (defun pcache-validate-repo (cache)
   (and
    (equal (oref cache :version)
@@ -124,7 +127,7 @@
            (or (null (oref entry :value-cls))
                (object-of-class-p
                 (oref entry :value) (oref entry :value-cls)))))
-    (hash-table-values (oref cache :entries)))))
+    (pcache-hash-table-values (oref cache :entries)))))
 
 (defclass pcache-entry ()
   ((timestamp :initarg :timestamp
