@@ -51,7 +51,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(eval-when-compile (require 'cl))
 (require 'eieio)
 (require 'eieio-base)
 
@@ -102,7 +102,7 @@
                         (puthash newname obj *pcache-repositories*)
                         obj))
                (error nil)))
-        (let ((obj (call-next-method))
+        (let ((obj (cl-call-next-method))
               (dir (file-name-directory path)))
           (unless (file-exists-p dir)
             (make-directory dir t))
@@ -119,9 +119,9 @@
 (defun pcache-validate-repo (cache)
   (and
    (equal (oref cache :version)
-          (oref-default (object-class cache) version-constant))
+          (oref-default (eieio-object-class cache) version-constant))
    (hash-table-p (oref cache :entries))
-   (every
+   (cl-every
     (lambda (entry)
       (and (object-of-class-p entry (oref cache :entry-cls))
            (or (null (oref entry :value-cls))
@@ -168,7 +168,7 @@
                    (make-instance
                     (oref cache :entry-cls)
                     :value value
-                    :value-cls (and (object-p value) (object-class value))))))
+                    :value-cls (and (eieio-object-p value) (eieio-object-class value))))))
     (when ttl
       (oset entry :ttl ttl))
     (prog1
@@ -206,7 +206,7 @@
     (when (or force (> time (+ timestamp delay)))
       (oset cache :timestamp time)
       ;; make sure version is saved to file
-      (oset cache :version (oref-default (object-class cache) version-constant))
+      (oset cache :version (oref-default (eieio-object-class cache) version-constant))
       (eieio-persistent-save cache))))
 
 (defmethod pcache-map ((cache pcache-repository) func)
