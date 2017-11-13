@@ -1,4 +1,4 @@
-;;; pcache-test.el --- tests for pcache.el
+;;; pcache-test.el --- tests for pcache.el -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2011  Yann Hodique
 
@@ -30,18 +30,22 @@
 
 (defmacro pcache-with-repository (var arglist &rest body)
   (declare (indent 2) (debug t))
-  `(let ((,var (apply pcache-repository ',arglist)))
+  `(let ((,var (pcache-repository :object-name ,@arglist)))
      (unwind-protect
          (progn
            ,@body)
-       (pcache-destroy-repository ,(car arglist)))))
+       (pcache-destroy-repository ,(car arglist))
+       (ignore-errors
+       	 (delete-directory
+       	  (file-name-directory (concat pcache-directory ,(car arglist)))))
+       )))
 
 (ert-deftest pcache-create-repo ()
   (pcache-with-repository repo ("pcache-test/tmp")
     (should (object-of-class-p repo 'pcache-repository))))
 
 (ert-deftest pcache-double-destroy ()
-  (pcache-with-repository repo ("pcache-test/tmp")
+  (pcache-with-repository _repo ("pcache-test/tmp")
     (pcache-destroy-repository "pcache-test/tmp")))
 
 (ert-deftest pcache-put-get ()
@@ -66,15 +70,14 @@
 (ert-deftest pcache-put-reload-get ()
   (pcache-with-repository repo ("pcache-test/tmp1")
     (pcache-put repo 'foo 44)
-    (pcache-save repo t)
-    (with-current-buffer
-        (find-file-noselect (concat pcache-directory "pcache-test/tmp1"))
+    (pcache-save repo 't)
+    (with-temp-file (concat pcache-directory "pcache-test/tmp2")
+      (insert-file-contents (concat pcache-directory "pcache-test/tmp1"))
       (goto-char (point-min))
       (while (search-forward "tmp1" nil t)
-        (replace-match "tmp2"))
-      (write-file (concat pcache-directory "pcache-test/tmp2"))))
+        (replace-match "tmp2"))))
   (pcache-with-repository repo ("pcache-test/tmp2")
-    (should (eq 44 (pcache-get repo 'foo)))))
+      (should (eql 44 (pcache-get repo 'foo)))))
 
 (provide 'pcache-test)
 ;;; pcache-test.el ends here
