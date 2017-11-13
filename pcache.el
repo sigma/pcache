@@ -82,7 +82,7 @@
 
 (defvar *pcache-repository-name* nil)
 
-(defmethod constructor :static ((cache pcache-repository) &rest args)
+(cl-defmethod make-instance ((cache (subclass pcache-repository)) &rest args)
   (let* ((newname (or (and (stringp (car args)) (car args))
 		      (plist-get args :object-name)
 		      *pcache-repository-name*
@@ -113,21 +113,21 @@
 
 (defun pcache-hash-table-values (h)
   (let (values)
-    (maphash (lambda (k v) (push v values)) h)
+    (maphash (lambda (_k v) (push v values)) h)
     values))
 
 (defun pcache-validate-repo (cache)
   (and
-   (equal (oref cache :version)
+   (equal (slot-value cache 'version)
           (oref-default (eieio-object-class cache) version-constant))
-   (hash-table-p (oref cache :entries))
+   (hash-table-p (slot-value cache 'entries))
    (cl-every
     (lambda (entry)
-      (and (object-of-class-p entry (oref cache :entry-cls))
-           (or (null (oref entry :value-cls))
+      (and (object-of-class-p entry (slot-value cache 'entry-cls))
+           (or (null (slot-value entry 'value-cls))
                (object-of-class-p
-                (oref entry :value) (oref entry :value-cls)))))
-    (pcache-hash-table-values (oref cache :entries)))))
+                (slot-value entry 'value) (slot-value entry 'value-cls)))))
+    (pcache-hash-table-values (slot-value cache 'entries)))))
 
 (defclass pcache-entry ()
   ((timestamp :initarg :timestamp
@@ -136,37 +136,37 @@
    (value :initarg :value :initform nil)
    (value-cls :initarg :value-cls :initform nil)))
 
-(defmethod pcache-entry-valid-p ((entry pcache-entry))
-  (let ((ttl (oref entry :ttl)))
+(cl-defmethod pcache-entry-valid-p ((entry pcache-entry))
+  (let ((ttl (slot-value entry 'ttl)))
     (or (null ttl)
         (let ((time (float-time (current-time))))
-          (< time (+ ttl (oref entry :timestamp)))))))
+          (< time (+ ttl (slot-value entry 'timestamp)))))))
 
-(defmethod pcache-get ((cache pcache-repository) key &optional default)
-  (let* ((table (oref cache :entries))
+(cl-defmethod pcache-get ((cache pcache-repository) key &optional default)
+  (let* ((table (slot-value cache 'entries))
          (entry (gethash key table)))
     (if entry
         (if (pcache-entry-valid-p entry)
-            (oref entry :value)
+            (slot-value entry 'value)
           (remhash key table)
           default)
       default)))
 
-(defmethod pcache-has ((cache pcache-repository) key)
+(cl-defmethod pcache-has ((cache pcache-repository) key)
   (let* ((default (make-symbol ":nil"))
-         (table (oref cache :entries))
+         (table (slot-value cache 'entries))
          (entry (gethash key table default)))
     (if (eq entry default) nil
       (if (pcache-entry-valid-p entry)
           t nil))))
 
-(defmethod pcache-put ((cache pcache-repository) key value &optional ttl)
-  (let ((table (oref cache :entries))
+(cl-defmethod pcache-put ((cache pcache-repository) key value &optional ttl)
+  (let ((table (slot-value cache 'entries))
         (entry (or (and (eieio-object-p value)
                         (object-of-class-p value 'pcache-entry)
                         value)
                    (make-instance
-                    (oref cache :entry-cls)
+                    (slot-value cache 'entry-cls)
                     :value value
                     :value-cls (and (eieio-object-p value) (eieio-object-class value))))))
     (when ttl
@@ -175,13 +175,13 @@
         (puthash key entry table)
       (pcache-save cache))))
 
-(defmethod pcache-invalidate ((cache pcache-repository) key)
-  (let ((table (oref cache :entries)))
+(cl-defmethod pcache-invalidate ((cache pcache-repository) key)
+  (let ((table (slot-value cache 'entries)))
     (remhash key table)
     (pcache-save cache)))
 
-(defmethod pcache-clear ((cache pcache-repository))
-  (let* ((entries (oref cache :entries))
+(cl-defmethod pcache-clear ((cache pcache-repository))
+  (let* ((entries (slot-value cache 'entries))
          (test (hash-table-test entries))
          (resize (hash-table-rehash-size entries))
          (threshold (hash-table-rehash-threshold entries))
@@ -191,17 +191,17 @@
                                           :weakness weakness)))
   (pcache-save cache))
 
-(defmethod pcache-purge-invalid ((cache pcache-repository))
-  (let ((table (oref cache :entries)))
+(cl-defmethod pcache-purge-invalid ((cache pcache-repository))
+  (let ((table (slot-value cache 'entries)))
     (maphash #'(lambda (k e)
                  (unless (pcache-entry-valid-p e)
                    (remhash k table)))
              table)
     (pcache-save cache)))
 
-(defmethod pcache-save ((cache pcache-repository) &optional force)
-  (let ((timestamp (oref cache :timestamp))
-        (delay (oref cache :save-delay))
+(cl-defmethod pcache-save ((cache pcache-repository) &optional force)
+  (let ((timestamp (slot-value cache 'timestamp))
+        (delay (slot-value cache 'save-delay))
         (time (float-time (current-time))))
     (when (or force (> time (+ timestamp delay)))
       (oset cache :timestamp time)
@@ -209,12 +209,12 @@
       (oset cache :version (oref-default (eieio-object-class cache) version-constant))
       (eieio-persistent-save cache))))
 
-(defmethod pcache-map ((cache pcache-repository) func)
-  (let ((table (oref cache :entries)))
+(cl-defmethod pcache-map ((cache pcache-repository) func)
+  (let ((table (slot-value cache 'entries)))
     (maphash func table)))
 
 (defun pcache-kill-emacs-hook ()
-  (maphash #'(lambda (k v)
+  (maphash #'(lambda (_k v)
                (condition-case nil
                    (pcache-purge-invalid v)
                  (error nil))
@@ -235,7 +235,7 @@
 (let (to-clean)
   (maphash #'(lambda (k v)
                (condition-case nil
-                   (unless (eql (oref v :version)
+                   (unless (eql (slot-value v 'version)
                                 pcache-version-constant)
                      (signal 'error nil))
                  (error
