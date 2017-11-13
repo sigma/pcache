@@ -1,4 +1,4 @@
-;;; pcache.el --- persistent caching for Emacs.
+;;; pcache.el --- persistent caching for Emacs. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2011  Yann Hodique
 
@@ -89,14 +89,13 @@
 		      (symbol-name cache)))
 	 (e (gethash newname *pcache-repositories*))
 	 (path (concat pcache-directory newname)))
-    (setq args (append args (list :object-name newname)))
+    (unless (plist-get args :object-name)
+	(setq args (append args (list :object-name newname))))
     (or e
-        (and (not (boundp 'pcache-avoid-recursion))
+        (and (not (plist-get args :file))
              (file-exists-p path)
              (condition-case nil
-                 (let* ((pcache-avoid-recursion t)
-			(*pcache-repository-name* newname)
-                        (obj (eieio-persistent-read path 'pcache-repository t)))
+                 (let* ((obj (eieio-persistent-read path 'pcache-repository)))
                    (and (or (pcache-validate-repo obj)
                             (error "wrong version"))
                         (puthash newname obj *pcache-repositories*)
