@@ -51,7 +51,11 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(eval-when-compile
+  (require 'cl)
+  (unless (fboundp 'cl-defmethod)
+    (require 'cl-generic)))
+
 (require 'eieio)
 (require 'eieio-base)
 
