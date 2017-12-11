@@ -6,6 +6,7 @@
 
 (depends-on "eieio" "1.3")
 (depends-on "cl-lib")
+(depends-on "cl-generic")
 
 (development
   (depends-on "ert-runner")
