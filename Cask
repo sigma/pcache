@@ -5,6 +5,7 @@
          "persistent caching for Emacs.")
 
 (depends-on "eieio" "1.3")
+(depends-on "cl-lib")
 
 (development
   (depends-on "ert-runner")
