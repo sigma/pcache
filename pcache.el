@@ -51,7 +51,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'eieio)
 (require 'eieio-base)
 
