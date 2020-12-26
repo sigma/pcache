@@ -1,4 +1,4 @@
-![Build Status](https://github.com/sigma/pcache/workflows/CI/badge.svg?branch=master)]
+![Build Status](https://github.com/sigma/pcache/workflows/CI/badge.svg?branch=master)
 
 ## Pcache
 
