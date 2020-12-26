@@ -4,7 +4,7 @@
 
 ;; Author: Yann Hodique <yann.hodique@gmail.com>
 ;; Keywords: extensions
-;; Version: 0.5.0
+;; Version: 0.5.1
 ;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -117,7 +117,11 @@
     (maphash (lambda (k v) (push v values)) h)
     values))
 
-(defun pcache-validate-repo (cache)
+;; force custom implementation.
+(cl-defmethod pcache-validate-repo ((cache t))
+  nil)
+
+(cl-defmethod pcache-validate-repo ((cache pcache-repository))
   (and
    (equal (oref cache version)
           (oref-default (eieio-object-class cache) version-constant))
@@ -126,9 +130,7 @@
     (function
      (lambda (entry)
        (and (object-of-class-p entry (oref cache entry-cls))
-            (or (null (oref entry :value-cls))
-                (object-of-class-p
-                 (oref entry :value) (oref entry :value-cls))))))
+            (pcache-validate-entry entry))))
     (pcache-hash-table-values (oref cache entries)))))
 
 (defclass pcache-entry ()
@@ -137,6 +139,15 @@
    (ttl :initarg :ttl :initform nil)
    (value :initarg :value :initform nil)
    (value-cls :initarg :value-cls :initform nil)))
+
+;; force custom implementation.
+(cl-defmethod pcache-validate-entry ((entry t))
+  nil)
+
+(cl-defmethod pcache-validate-entry ((entry pcache-entry))
+  (or (null (oref entry value-cls))
+      (object-of-class-p
+       (oref entry value) (oref entry value-cls))))
 
 (cl-defmethod pcache-entry-valid-p ((entry pcache-entry))
   (let ((ttl (oref entry ttl)))
