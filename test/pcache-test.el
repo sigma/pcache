@@ -49,6 +49,11 @@
     (pcache-put repo 'foo 42)
     (should (eq 42 (pcache-get repo 'foo)))))
 
+(ert-deftest pcache-validate-simple ()
+  (pcache-with-repository repo ("pcache-test/tmp")
+    (pcache-put repo 'foo 42)
+    (should (pcache-validate-repo repo))))
+
 (ert-deftest pcache-get-expired ()
   (pcache-with-repository repo ("pcache-test/tmp")
     (pcache-put repo 'foo 42 1)
