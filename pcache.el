@@ -56,10 +56,7 @@
 (require 'eieio)
 (require 'eieio-base)
 
-(defvar pcache-directory
-  (let ((dir (concat user-emacs-directory "var/pcache/")))
-    (make-directory dir t)
-    dir))
+(defvar pcache-directory (concat user-emacs-directory "var/pcache/"))
 
 (defvar *pcache-repositories* (make-hash-table :test 'equal))
 
