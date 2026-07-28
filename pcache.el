@@ -77,7 +77,7 @@
    (timestamp :initarg :timestamp :initform (float-time (current-time)))
    (save-delay :initarg :save-delay)))
 
-(oset-default 'pcache-repository :save-delay pcache-default-save-delay)
+(oset-default 'pcache-repository save-delay pcache-default-save-delay)
 (oset-default 'pcache-repository version-constant pcache-version-constant)
 
 (defvar *pcache-repository-name* nil)
@@ -106,8 +106,8 @@
               (dir (file-name-directory path)))
           (unless (file-exists-p dir)
             (make-directory dir t))
-          (oset obj :file path)
-          (oset obj :version (oref-default obj version-constant))
+          (oset obj file path)
+          (oset obj version (oref-default obj version-constant))
           (puthash newname obj *pcache-repositories*)
           obj))))
 
@@ -182,7 +182,7 @@
                     :value value
                     :value-cls (and (eieio-object-p value) (eieio-object-class value))))))
     (when ttl
-      (oset entry :ttl ttl))
+      (oset entry ttl ttl))
     (prog1
         (puthash key entry table)
       (pcache-save cache))))
@@ -198,9 +198,9 @@
          (resize (hash-table-rehash-size entries))
          (threshold (hash-table-rehash-threshold entries))
          (weakness (hash-table-weakness entries)))
-    (oset cache :entries (make-hash-table :test test :rehash-size resize
-                                          :rehash-threshold threshold
-                                          :weakness weakness)))
+    (oset cache entries (make-hash-table :test test :rehash-size resize
+                                         :rehash-threshold threshold
+                                         :weakness weakness)))
   (pcache-save cache))
 
 (cl-defmethod pcache-purge-invalid ((cache pcache-repository))
@@ -216,9 +216,9 @@
         (delay (oref cache save-delay))
         (time (float-time (current-time))))
     (when (or force (> time (+ timestamp delay)))
-      (oset cache :timestamp time)
+      (oset cache timestamp time)
       ;; make sure version is saved to file
-      (oset cache :version (oref-default (eieio-object-class cache) version-constant))
+      (oset cache version (oref-default (eieio-object-class cache) version-constant))
       (eieio-persistent-save cache))))
 
 (cl-defmethod pcache-map ((cache pcache-repository) func)
